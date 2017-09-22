@@ -6,6 +6,7 @@
 
 // for convenience
 using json = nlohmann::json;
+using namespace std;
 
 // For converting back and forth between radians and degrees.
 constexpr double pi() { return M_PI; }
@@ -33,7 +34,16 @@ int main()
   uWS::Hub h;
 
   PID pid;
+  // PID pid_t;
   // TODO: Initialize the pid variable.
+
+  // pid.Init(0.1, 0, 0.1); // fall out of track, overshoot too much
+  // pid.Init(0.1, 0, 1); // is able to finish, but still oscillate a lot
+  // pid.Init(0.1, 0, 3); // is able to finish ralively well, still close to track at some point
+
+  pid.Init(0.15, 0, 3); // final working parameter
+  
+  // pid.Init(0.15, 0.1, 3); // quickly run out of track, too much I component!! -> K_i needs to be very small if needed at all
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -44,19 +54,33 @@ int main()
       auto s = hasData(std::string(data).substr(0, length));
       if (s != "") {
         auto j = json::parse(s);
+        // cout << j[2] << j[3] << endl;
         std::string event = j[0].get<std::string>();
         if (event == "telemetry") {
           // j[1] is the data JSON object
+
           double cte = std::stod(j[1]["cte"].get<std::string>());
           double speed = std::stod(j[1]["speed"].get<std::string>());
           double angle = std::stod(j[1]["steering_angle"].get<std::string>());
           double steer_value;
+
+          // cout << j[1] << endl;
           /*
           * TODO: Calcuate steering value here, remember the steering value is
           * [-1, 1].
           * NOTE: Feel free to play around with the throttle and speed. Maybe use
           * another PID controller to control the speed!
           */
+
+          // pid.cte_diff = pid.cte - pid.cte_prev;
+          // pid.cte_prev = pid.cte;
+          // pid.cte_sum += pid.cte;
+
+          // update the parameters using new cte
+          pid.UpdateError(cte);
+
+          // cout << "cte_diff: " << pid.cte_diff << "; cte_sum: " << pid.cte_sum << endl;
+          steer_value = - pid.Kp * pid.p_error - pid.Kd * pid.d_error - pid.Ki * pid.i_error;
           
           // DEBUG
           std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;

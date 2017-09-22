@@ -3,6 +3,25 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Reflecton
+
+1. **Student describes the effect of the P, I, D component of the PID algorithm in their implementation. Is it what you expected?**
+    1. P component is propotional to the cte and it is the major part to correct the car back to the central driving lane. By increasing $K_p$, the car should correct itself toward the central lane faster.
+    2. D component is used to correct the overshooting effect that is caused by the sole usage of P-control. The higher $K_d$ is, the smaller overshoot should become.
+    3. I component is used to overcome the system/mechanical bias that may exist in the object. Increasing $K_i$ should force the car to the middle of drive lane (since cte is calcuated against lane middlecenter). However, one should first try to apply PD control before applying the I component to see if there exists a bias.
+    
+    The project indeed shows that the P, I, D component works as expected, respectively.    
+
+2. **Student discusses how they chose the final hyperparameters (P, I, D coefficients). This could be have been done through manual tuning, twiddle, SGD, or something else, or a combination!**
+
+    In this project, the manual tuning is used to get the optimized parameter for PID control. Specifically, following steps are used in the process of tuning:
+    1) Initilize the parameter tuple ($K_p$, $K_i$, $K_d$) = (0.1, 0, 0.1). We set $K_i = 0$ first because we want to examine how the PD controller works and see if there is any bias. It turns out the car is able to run initially, but quickly fall out of the track because to much of overshooting. 
+    2) Observing the effect of overshooting and knowing that increasing $K_i$ should help alleviate overshoot, we set the parameter tuple to ($K_p$, $K_i$, $K_d$) = (0.1, 0, 1). The car now is able to finish the entire track but still overshoot quite a lot. At some point, the car will run over the drive lane and hit the edge.
+    3) So we keep increasing $K_d$ and set the ($K_p$, $K_i$, $K_d$) = (0.1, 0, 3). Now the car is able to finish the track relatively well, but still very close to the edge at some point. This might due to the P component is too small and therefore not able to pull the car back fast enough.
+    4) Following this intuition, I increase the $K_p$ a little bit and set ($K_p$, $K_i$, $K_d$) = (0.15, 0, 3) and the car is able to finish the entire track quite well. Note that the car is almost always driving in the middle of the lane so I conclude that there is no need to add the I component. I do try increase $K_i$ to 0.1 and the car quickly fall out of the track. This indicate $K_i$ needs to be set very small if necessary at all.
+    
+    So in conclusion, our final manually tuned PID parameters are **($K_p$, $K_i$, $K_d$) = (0.15, 0, 3)**.
+
 ## Dependencies
 
 * cmake >= 3.5

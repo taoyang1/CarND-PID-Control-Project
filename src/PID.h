@@ -17,6 +17,21 @@ public:
   double Ki;
   double Kd;
 
+  // cross tracking error
+  double cte;
+  // double cte_prev;
+  // double cte_diff;
+  // double cte_sum;
+
+  // algo steps
+  int step;
+
+  // twiddle 
+  // double best_error;
+  // double curr_error;
+  // double dp[3];
+  // double p[3];
+  // bool add_flag, subtract_flag;
   /*
   * Constructor
   */
